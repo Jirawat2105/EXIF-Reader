@@ -14,6 +14,8 @@ from PySide6.QtWidgets import (
 from metadata import read_metadata, value, shutter_count, condition, preview_bytes
 from ratings import lookup_rating, reference_for, camera_brand, ENTRIES
 from reports import create_report, verify_report
+from brand_logos import logo_pixmap, SOURCES
+from version import __version__
 
 SUPPORTED = {'.jpg','.jpeg','.tif','.tiff','.png','.webp','.heic','.heif','.hif',
              '.nef','.nrw','.arw','.sr2','.srf','.crw','.cr2','.cr3','.dng',
@@ -121,29 +123,26 @@ class PhotoBox(QFrame):
         else:super().keyPressEvent(event)
 
 class BrandBadge(QLabel):
-    """Local typographic manufacturer badge; no network image dependency."""
+    """Display original downloaded SVG artwork, bundled for offline use."""
     def __init__(self):
         super().__init__()
         self.setFixedSize(126,78)
         self.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.set_brand('CAMERA')
+
     def set_brand(self,brand):
-        palettes={
-            'Sony':('SONY','#0a0c10','#ffffff','Georgia',23),
-            'Nikon':('Nikon','#f7d72c','#141414','Segoe UI',24),
-            'Canon':('Canon','#fafafa','#c6252f','Georgia',24),
-            'Fujifilm':('FUJIFILM','#0d1516','#f1f7f5','Segoe UI',16),
-            'Pentax':('PENTAX','#15151b','#ee4e59','Segoe UI',21),
-            'OM SYSTEM':('OM SYSTEM','#10171c','#eff2f6','Segoe UI',15),
-            'Panasonic':('LUMIX','#10161f','#f2f6fa','Segoe UI',23),
-            'Ricoh':('RICOH','#fafafa','#b91c37','Segoe UI',23),
-            'Leica':('Leica','#bd1922','#ffffff','Georgia',24),
-            'Hasselblad':('HASSELBLAD','#10151b','#e7eef4','Segoe UI',12),
-        }
-        text,bg,fg,font,size=palettes.get(brand,(brand.upper()[:18],'#202833','#aeb9c9','Segoe UI',14))
-        self.setText(text)
-        self.setToolTip(brand+' / camera manufacturer')
-        self.setStyleSheet(f'background:{bg};color:{fg};font-family:"{font}";font-size:{size}px;font-weight:700;border:1px solid #3c4654;border-radius:10px;')
+        self.clear()
+        self.setAccessibleName(brand+' logo')
+        pixmap=logo_pixmap(brand)
+        self.logo_loaded=not pixmap.isNull()
+        if self.logo_loaded:
+            self.setPixmap(pixmap)
+            self.setStyleSheet('background:white;border:1px solid #647080;border-radius:10px;')
+            self.setToolTip(brand+' / Original logo artwork\n'+SOURCES[brand]['source_page'])
+        else:
+            self.setText(brand.upper()[:18])
+            self.setStyleSheet('background:#202833;color:#aeb9c9;font-size:14px;font-weight:700;border:1px solid #3c4654;border-radius:10px;')
+            self.setToolTip(brand+' / No logo artwork available')
 
 class Reader(QThread):
     done=Signal(object,str,bytes)
@@ -181,7 +180,7 @@ class Window(QMainWindow):
         self.token=0
         self.queued=None
         self.reference=None
-        self.setWindowTitle('EMBER EXIF / Camera Inspector')
+        self.setWindowTitle('EXIF Reader '+__version__+' / EMBER Camera Inspector')
         self.resize(1280,940)
         self.setMinimumSize(960,700)
         self.setAcceptDrops(True)
@@ -604,6 +603,15 @@ if __name__=='__main__':
         if path.exists():QFontDatabase.addApplicationFont(str(path))
     app.setStyle('Fusion')
     app.setStyleSheet(STYLE)
+    if '--self-test' in sys.argv:
+        from self_test import run
+        try:
+            run(app,sys.argv[sys.argv.index('--self-test')+1])
+        except Exception:
+            import traceback
+            Path(sys.argv[sys.argv.index('--self-test')+1]).with_suffix('.error.txt').write_text(traceback.format_exc(),encoding='utf-8')
+            raise
+        sys.exit(0)
     window=Window()
     window.show()
     sys.exit(app.exec())

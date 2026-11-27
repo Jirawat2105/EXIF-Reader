@@ -10,13 +10,20 @@ A local, ad-free camera metadata inspector for Windows. Read EXIF and supported 
 
 ## Downloads
 
-This repository currently provides source code. No compiled EXE or installer has been published. GitHub source archives contain project files, not a standalone application.
+Download [EXIFReader 1.0.0 for Windows x64](https://github.com/Jirawat2105/EXIF-Reader/releases/download/v1.0.0/EXIFReader-1.0.0-Windows-x64.exe) from [GitHub Releases](https://github.com/Jirawat2105/EXIF-Reader/releases).
+
+Double-click the EXE to start. Python, ExifTool and the downloaded brand logos are included; no Python installation, setup script or internet connection is needed to inspect photos. The EXE is a portable single-file app, not an installer, and extracts its runtime to a temporary folder at startup. Allow a moment for the first launch.
+
+[SHA-256 checksums](https://github.com/Jirawat2105/EXIF-Reader/releases/download/v1.0.0/SHA256SUMS.txt) and [third-party notices](https://github.com/Jirawat2105/EXIF-Reader/releases/download/v1.0.0/EXIFReader-1.0.0-ThirdPartyNotices.zip) accompany the release. GitHub source archives contain project files, not the compiled app.
+
+The Windows executable is unsigned. Windows may display **Unknown Publisher** or a SmartScreen warning. That message alone is not a malware detection and does not establish safety; investigate specific threat detections before running any download. Source code is available for inspection and rebuilding.
 
 ## Features
 
 - Click the photo box to select or replace one photo, or drop a single image into the window.
 - Preview supported images, including embedded RAW previews, with orientation applied.
 - Read camera, lens, exposure, capture time and serial information when available.
+- Display original SVG brand logos downloaded from Wikimedia Commons for 14 camera brands; artwork and provenance are bundled for offline use.
 - Inspect a recorded shutter counter and see which metadata tag supplied it.
 - Match supported camera models to a shutter-life reference, with its source and provenance displayed.
 - View green, yellow and red usage bands, or enter a clearly labeled custom reference.
@@ -27,8 +34,8 @@ This repository currently provides source code. No compiled EXE or installer has
 
 ## Requirements
 
-- Windows x64 and 64-bit Python 3.11 or newer, available as `python` in your PATH.
-- Internet access for initial Python dependency and ExifTool setup.
+- Windows x64. The compiled EXE includes Python and ExifTool.
+- Running from source instead requires 64-bit Python 3.11+ in PATH and internet access for initial dependency setup.
 - Enough memory and disk space for the selected photo and exported reports.
 
 macOS, Linux and mobile builds have not been validated. The current automatic ExifTool setup is for Windows x64.
@@ -98,12 +105,36 @@ metadata.py               Metadata extraction, preview reading and counters
 ratings.py                Model references and provenance
 reports.py                PDF reports and local checksum verification
 scripts/                  Verified ExifTool setup helper
+assets/logos/             Original SVG brand artwork and source manifest
+brand_logos.py            Offline SVG logo renderer
+self_test.py              Packaged-app smoke test
 docs/                     Screenshot without personal photo data
 test_*.py                 Automated checks
 .github/workflows/        Windows test workflow
 ```
 
 Virtual environments, downloaded tools, personal photos, generated reports and test outputs are excluded from Git. Compiled downloads belong in GitHub Releases rather than the source tree.
+
+## Build the Windows EXE
+
+Double-click **Build EXE.bat**, or run:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt pyinstaller==6.22.3
+.\.venv\Scripts\python.exe scripts\build_windows.py
+```
+
+Build on Windows x64. The script bundles the complete ExifTool distribution, logo assets, Python/Qt runtime and license notices, then runs the frozen application from outside the checkout using the native Windows backend. The smoke test checks all logos, photo reading, automatic reference matching, PDF generation/checksums and Clear photo. Versioned release files and SHA-256 checksums are written to `dist/`.
+
+## Brand logos
+
+The app uses original SVG files downloaded from Wikimedia Commons, rather than recreating logos with installed fonts. The current collection covers Sony, Nikon, Canon, Fujifilm, Pentax, Panasonic, Ricoh, Leica, Hasselblad, OM SYSTEM, Olympus, Sigma, Samsung and Phase One. Original colors and proportions are retained on a neutral logo tile. Unknown brands use a plain text fallback.
+
+![Original downloaded camera-brand logos](docs/brand-logos.png)
+
+File URLs, source pages, hashes, authors/credits and source license labels are recorded in [`assets/logos/SOURCES.json`](assets/logos/SOURCES.json). Logos and trademarks remain with their respective owners; MIT applies to the project code, not ownership of those marks. No manufacturer endorsement is implied.
+
+To refresh the artwork from the recorded Commons file titles, run `python scripts/fetch_brand_logos.py` and review the resulting changes. Inspection never uploads photos or performs background logo requests.
 
 ## Testing
 
@@ -112,7 +143,7 @@ Virtual environments, downloaded tools, personal photos, generated reports and t
 .\.venv\Scripts\python.exe -m unittest -v
 ```
 
-Tests cover counters and usage bands, exact reference matching, photo-box selection, clear during reading, replacement, cancelled dialogs, custom-reference restoration, PDF generation and provenance, source changes, checksum mismatches and ExifTool archive validation. GUI tests use Qt's offscreen backend.
+Tests cover counters and usage bands, exact reference matching, photo-box selection, clear during reading, replacement, cancelled dialogs, custom-reference restoration, PDF generation and provenance, source changes, checksum mismatches ExifTool archive validation, and the integrity/rendering of all 14 downloaded logos. GUI tests use Qt's offscreen backend.
 
 Earlier local validation read 221 Sony ILCE-7M4 ARW images and 11 additional ExifTool project fixtures across several brands and formats. Those private images, reports and fixture outputs are not included in this repository. That validation does not establish support for every model or firmware version.
 
@@ -132,7 +163,7 @@ EXIF Reader's application code was written entirely by AI under the direction of
 
 AI-generated code may contain bugs or unexpected behavior. This software is provided "as is", without warranty, under the terms of the [MIT License](LICENSE). Keep backups of important images and verify displayed information and exported reports before relying on them.
 
-Download source from [this repository](https://github.com/Jirawat2105/EXIF-Reader). No compiled Windows application is currently distributed by this project, and code signing is not claimed.
+Download source from [this repository](https://github.com/Jirawat2105/EXIF-Reader). Compiled Windows downloads are provided in Releases. The executable is not digitally signed.
 
 ## Built with
 

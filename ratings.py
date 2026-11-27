@@ -28,7 +28,7 @@ add('Panasonic',['DC-GH5'],200000,'https://www.panasonic.com/content/dam/Panason
 
 def camera_brand(make):
     upper=make.upper()
-    for needles,brand in [(['NIKON'],'Nikon'),(['SONY'],'Sony'),(['CANON'],'Canon'),(['FUJI'],'Fujifilm'),(['PENTAX'],'Pentax'),(['OM DIGITAL','OLYMPUS','OM SYSTEM'],'OM SYSTEM'),(['PANASONIC','LUMIX'],'Panasonic'),(['RICOH'],'Ricoh'),(['LEICA'],'Leica'),(['HASSELBLAD'],'Hasselblad'),(['SIGMA'],'Sigma'),(['SAMSUNG'],'Samsung'),(['LEAF','PHASE ONE'],'Phase One')]:
+    for needles,brand in [(['NIKON'],'Nikon'),(['SONY'],'Sony'),(['CANON'],'Canon'),(['FUJI'],'Fujifilm'),(['PENTAX'],'Pentax'),(['OM DIGITAL','OM SYSTEM'],'OM SYSTEM'),(['OLYMPUS'],'Olympus'),(['PANASONIC','LUMIX'],'Panasonic'),(['RICOH'],'Ricoh'),(['LEICA'],'Leica'),(['HASSELBLAD'],'Hasselblad'),(['SIGMA'],'Sigma'),(['SAMSUNG'],'Samsung'),(['LEAF','PHASE ONE'],'Phase One')]:
         if any(n in upper for n in needles):return brand
     return make.strip() or 'CAMERA'
 
@@ -44,7 +44,7 @@ def lookup_rating(data):
     # Ricoh manufactures Pentax bodies, so use explicit model prefix where present.
     model=value(data,'Model',default='')
     if model.upper().startswith('PENTAX '):brand='Pentax'
-    return next((dict(e) for e in ENTRIES if e['brand']==brand and normalize(e['model'])==normalize(model)),None)
+    return next((dict(e) for e in ENTRIES if e['brand']==('OM SYSTEM' if brand=='Olympus' else brand) and normalize(e['model'])==normalize(model)),None)
 
 def reference_for(data,rating):
     match=lookup_rating(data)
